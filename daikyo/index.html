@@ -19,21 +19,25 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ===== PC非対応メッセージ ===== */
-    .pc-block {
-      display: none;
-      height: 100vh;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      color: #faf5ed;
-      font-size: 16px;
-      line-height: 2;
-      padding: 40px;
-    }
+    /* ===== PC対応: スマホ幅で中央表示 ===== */
     @media (min-width: 481px) {
-      .pc-block { display: flex; }
-      .container, .overlay { display: none !important; }
+      body {
+        display: flex;
+        justify-content: center;
+        background: #f0f0f0;
+      }
+      .container, .detail-page, .legal-page {
+        max-width: 430px;
+        background: #ffffff;
+        min-height: 100vh;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      }
+      .overlay {
+        max-width: 430px;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%);
+      }
     }
 
     /* ===== コンテナ（モバイル専用・フル幅） ===== */
@@ -599,8 +603,6 @@
 </head>
 <body>
 
-  <!-- PC用メッセージ -->
-  <div class="pc-block">スマートフォンでご利用ください</div>
 
   <!-- ===== トップ画面 ===== -->
   <div class="container" id="topScreen">
@@ -647,8 +649,6 @@
       </div>
       <table class="prize-table" id="prizeTable"></table>
       <button class="gacha-btn" id="gachaBtn" onclick="startSpin()">ガチャを回す！</button>
-      <!-- テスト用（本番前に削除） -->
-      <button class="gacha-btn" style="background:#888;margin-top:8px;animation:none" onclick="executeSpin(currentGachaIndex)">🧪 テスト（決済スキップ）</button>
 
       <div class="legal-links">
         <a href="#" onclick="showLegal('tokushoho')">特定商取引法に基づく表記</a>
@@ -1091,11 +1091,10 @@ function clearEffects() {
 var LEGAL_PAGES = {
   tokushoho: '<h2>特定商取引法に基づく表記</h2>' +
     '<table>' +
-    '<tr><td>販売事業者</td><td>すしめん処 大京</td></tr>' +
-    '<tr><td>所在地</td><td>（店舗住所をここに記載）</td></tr>' +
-    '<tr><td>電話番号</td><td>（電話番号をここに記載）</td></tr>' +
-    '<tr><td>メールアドレス</td><td>（メールアドレスをここに記載）</td></tr>' +
-    '<tr><td>運営責任者</td><td>（責任者名をここに記載）</td></tr>' +
+    '<tr><td>販売事業者</td><td>礼</td></tr>' +
+    '<tr><td>所在地</td><td>東京都</td></tr>' +
+    '<tr><td>電話番号</td><td>080-2346-1710</td></tr>' +
+    '<tr><td>運営責任者</td><td>濱田礼</td></tr>' +
     '<tr><td>商品の販売価格</td><td>寿司ガチャ: ¥700（税込）<br>麺・御膳ガチャ: ¥500（税込）</td></tr>' +
     '<tr><td>商品代金以外の費用</td><td>なし</td></tr>' +
     '<tr><td>支払方法</td><td>クレジットカード決済</td></tr>' +
