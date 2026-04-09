@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>すしめん処 大京 ガチャ</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== リセット・ベース ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #ffffff;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ===== PC非対応メッセージ ===== */
+    .pc-block {
+      display: none;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #faf5ed;
+      font-size: 16px;
+      line-height: 2;
+      padding: 40px;
+    }
+    @media (min-width: 481px) {
+      .pc-block { display: flex; }
+      .container, .overlay { display: none !important; }
+    }
+
+    /* ===== コンテナ（モバイル専用・フル幅） ===== */
+    .container {
+      width: 100%;
+      padding-bottom: 40px;
+    }
+
+    /* ===== アニメーション定義 ===== */
+    @keyframes cardSlideUp {
+      0% { transform: translateY(60px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes headerSlideDown {
+      0% { transform: translateY(-40px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes pulseBtn {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    @keyframes confetti {
+      0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    @keyframes cardSpin {
+      0% { transform: perspective(800px) rotateY(0deg); }
+      50% { transform: perspective(800px) rotateY(90deg); }
+      100% { transform: perspective(800px) rotateY(0deg); }
+    }
+    @keyframes cardSpinGold {
+      0% { transform: perspective(800px) rotateY(0deg); box-shadow: 0 0 20px rgba(255,215,0,0.5); }
+      50% { transform: perspective(800px) rotateY(90deg); box-shadow: 0 0 60px rgba(255,215,0,0.8); }
+      100% { transform: perspective(800px) rotateY(0deg); box-shadow: 0 0 30px rgba(255,215,0,0.6); }
+    }
+    @keyframes cardSpinSilver {
+      0% { transform: perspective(800px) rotateY(0deg); box-shadow: 0 0 20px rgba(192,192,192,0.5); }
+      50% { transform: perspective(800px) rotateY(90deg); box-shadow: 0 0 60px rgba(192,192,192,0.8); }
+      100% { transform: perspective(800px) rotateY(0deg); box-shadow: 0 0 30px rgba(192,192,192,0.6); }
+    }
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,0.3); }
+      50% { box-shadow: 0 0 40px rgba(255,215,0,0.6); }
+    }
+    @keyframes floatSparkle {
+      0% { transform: scale(0) rotate(0deg); opacity: 0; }
+      50% { transform: scale(1) rotate(180deg); opacity: 1; }
+      100% { transform: scale(0) rotate(360deg); opacity: 0; }
+    }
+    @keyframes ringExpand {
+      0% { transform: scale(0); opacity: 0.8; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes shakeRing {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    @keyframes spinGacha {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ===== ロゴバナー（ガチャカードと同じ幅・比率） ===== */
+    .logo-header {
+      margin: 10px 8px 0;
+      animation: headerSlideDown 0.6s ease-out;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .logo-header img {
+      width: 100%;
+      display: block;
+      aspect-ratio: 3 / 1;
+      object-fit: cover;
+    }
+
+    /* ===== ガチャカード（トップ画面） ===== */
+    .gacha-card {
+      background: #faf5ed; /* 和紙色 */
+      border-radius: 0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      padding: 0;
+      margin: 10px 8px 0;
+      cursor: pointer;
+      animation: cardSlideUp 0.6s ease-out both;
+      transition: transform 0.2s;
+      overflow: hidden;
+    }
+    .gacha-card:nth-child(2) { animation-delay: 0.15s; }
+    .gacha-card:nth-child(3) { animation-delay: 0.3s; }
+    .gacha-card:hover { transform: translateY(-2px); }
+    .gacha-card-img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+      aspect-ratio: 16 / 9;
+    }
+    .gacha-card-body {
+      padding: 14px 16px 16px;
+      min-height: 110px; /* カード高さ統一 */
+    }
+    .gacha-card .gacha-name {
+      font-size: 20px;
+      font-weight: 900;
+      color: #2a2218; /* 墨色 */
+    }
+    .gacha-card .gacha-catch {
+      font-size: 13px;
+      color: #6b5e50; /* 丁子茶 */
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+    .gacha-card .gacha-price {
+      font-size: 26px;
+      font-weight: 900;
+      color: #c41e3a; /* 朱赤 */
+      margin-top: 8px;
+    }
+    .gacha-card .gacha-price-tax {
+      font-size: 13px;
+      font-weight: 400;
+      color: #8a7e72;
+    }
+    .gacha-card .detail-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #c41e3a, #a01830);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    /* ===== ガチャを回すボタン ===== */
+    .gacha-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #c41e3a, #a01830);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      margin-top: 16px;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      animation: pulseBtn 2s ease-in-out infinite;
+      letter-spacing: 1px;
+    }
+    .gacha-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      animation: none;
+    }
+
+    /* ===== オーバーレイ共通 ===== */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 1000;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .overlay.active { display: flex; }
+
+    /* ===== ガチャ詳細画面（別ページ表示） ===== */
+    .detail-page {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+      background: #ffffff;
+    }
+    .detail-page.active { display: block; }
+    .detail-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #c41e3a;
+      background: none;
+      border: none;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      width: 100%;
+    }
+    .detail-content {
+      padding: 20px 16px;
+    }
+    .detail-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #2a2218;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .detail-catch {
+      font-size: 13px;
+      color: #6b5e50;
+      text-align: center;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .detail-price-header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .detail-price-header .price-amount {
+      font-size: 28px;
+      font-weight: 900;
+      color: #c41e3a;
+    }
+    .detail-price-header .price-tax {
+      font-size: 13px;
+      color: #999;
+    }
+
+    /* ===== 景品テーブル ===== */
+    .prize-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 6px;
+    }
+    .prize-row {
+      background: #fff8f0;
+      overflow: hidden;
+    }
+    .prize-row td {
+      padding: 10px 12px;
+      vertical-align: middle;
+    }
+    .prize-row td:first-child {
+      width: 72px;
+    }
+    .prize-row img {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      display: block;
+    }
+    .prize-grade {
+      display: inline-block;
+      padding: 2px 12px;
+      border-radius: 4px; /* 角型バッジ */
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .prize-grade.s { background: #d4a843; }
+    .prize-grade.a { background: #8e8e8e; }
+    .prize-grade.b { background: #a0522d; }
+    .prize-grade.c { background: #999; }
+    .prize-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #2a2218;
+    }
+    .prize-prob {
+      font-size: 12px;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    /* ===== スピンオーバーレイ ===== */
+    .spin-overlay {
+      background: rgba(0,0,0,0.85);
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    .spin-icon {
+      font-size: 80px;
+      animation: spinGacha 1s linear infinite;
+    }
+    .spin-text {
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 24px;
+      animation: blink 1s ease-in-out infinite;
+    }
+
+    /* ===== 結果画面 ===== */
+    .result-overlay {
+      background: rgba(0,0,0,0.75);
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    .result-card {
+      background: #faf5ed;
+      border-radius: 4px;
+      max-width: 320px;
+      width: 85%;
+      padding: 24px;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+    /* 等級別スピンアニメ */
+    .result-card.spin-normal { animation: cardSpin 0.8s ease-in-out; }
+    .result-card.spin-gold { animation: cardSpinGold 1s ease-in-out; }
+    .result-card.spin-silver { animation: cardSpinSilver 0.9s ease-in-out; }
+    /* グロー */
+    .result-card.glow-gold { animation: glowPulse 2s ease-in-out infinite; }
+    .result-card.glow-silver { box-shadow: 0 0 20px rgba(192,192,192,0.4); }
+
+    /* 等級バッジ（角型） */
+    .result-badge {
+      display: inline-block;
+      padding: 6px 24px;
+      border-radius: 4px;
+      font-size: 22px;
+      font-weight: 900;
+      color: #fff;
+      margin: 0 auto 12px;
+      letter-spacing: 2px;
+    }
+    .result-badge.s { background: #d4a843; }
+    .result-badge.a { background: #8e8e8e; }
+    .result-badge.b { background: #a0522d; }
+    .result-badge.c { background: #999; }
+
+    .result-prize-name {
+      font-size: 22px;
+      font-weight: 900;
+      color: #2a2218;
+      margin-bottom: 8px;
+    }
+    /* 価格の二段表記 */
+    .result-price-block {
+      margin-bottom: 4px;
+    }
+    .result-original-price {
+      font-size: 14px;
+      color: #999;
+      text-decoration: line-through;
+    }
+    .result-gacha-price {
+      font-size: 22px;
+      font-weight: 900;
+      color: #c41e3a;
+      margin-top: 2px;
+    }
+    .result-image {
+      width: 100%;
+      border-radius: 0;
+      margin-top: 16px;
+      object-fit: cover;
+      aspect-ratio: 4 / 3;
+      display: block;
+    }
+    .staff-notice {
+      margin-top: 16px;
+      padding: 10px;
+      background: #cc2222;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    /* リアルタイム時計 */
+    .result-clock {
+      margin-top: 10px;
+      font-size: 28px;
+      font-weight: 900;
+      color: #2a2218;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 1px;
+    }
+    /* カウントダウン */
+    .result-countdown {
+      margin-top: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #c41e3a;
+    }
+    .result-countdown.warning {
+      animation: blink 0.5s ease-in-out infinite;
+    }
+    /* 期限切れオーバーレイ */
+    .expired-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 4px;
+      z-index: 20;
+    }
+    .expired-text {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+    .expired-sub {
+      color: #ccc;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    .result-buttons {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .result-buttons button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+    }
+    .btn-pay {
+      background: linear-gradient(135deg, #c41e3a, #a01830);
+      color: #fff;
+      font-size: 17px;
+      padding: 16px;
+      letter-spacing: 1px;
+      animation: pulseBtn 2s ease-in-out infinite;
+    }
+    .btn-retry {
+      background: #faf5ed;
+      color: #2a2218;
+      border: 2px solid #d4cec4 !important;
+    }
+    .btn-top {
+      background: #faf5ed;
+      color: #2a2218;
+      border: 2px solid #d4cec4 !important;
+    }
+
+    /* ===== 紙吹雪・スパークル・リング ===== */
+    .confetti-piece {
+      position: fixed;
+      top: -10px;
+      width: 10px; height: 10px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .sparkle {
+      position: fixed;
+      font-size: 24px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .ring {
+      position: fixed;
+      width: 40px; height: 40px;
+      border: 3px solid rgba(212,168,67,0.6);
+      border-radius: 50%;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+
+
+    /* ===== 抽選時刻表示 ===== */
+    .result-timestamp {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #6b5e50;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== 法的リンク ===== */
+    .legal-links {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #e8e0d4;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: center;
+    }
+    .legal-links a {
+      font-size: 12px;
+      color: #8a7e72;
+      text-decoration: underline;
+    }
+
+    /* ===== 法的ページ ===== */
+    .legal-page {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+      background: #ffffff;
+    }
+    .legal-page.active { display: block; }
+    .legal-content {
+      padding: 20px 16px;
+      font-size: 13px;
+      color: #2a2218;
+      line-height: 1.8;
+    }
+    .legal-content h2 {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .legal-content h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 20px;
+      margin-bottom: 8px;
+    }
+    .legal-content p {
+      margin-bottom: 12px;
+    }
+    .legal-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+    .legal-content td {
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      vertical-align: top;
+    }
+    .legal-content td:first-child {
+      font-weight: 700;
+      white-space: nowrap;
+      width: 30%;
+      background: #faf5ed;
+    }
+
+    /* ===== フッター ===== */
+    .footer {
+      text-align: center;
+      padding: 24px 16px 8px;
+      font-size: 11px;
+      color: #bbb;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PC用メッセージ -->
+  <div class="pc-block">スマートフォンでご利用ください</div>
+
+  <!-- ===== トップ画面 ===== -->
+  <div class="container" id="topScreen">
+
+    <!-- ロゴバナー -->
+    <div class="logo-header">
+      <img src="logo_banner_1200x630.png" alt="すしめん処 大京">
+    </div>
+
+    <!-- ガチャカード1: 寿司ガチャ -->
+    <div class="gacha-card">
+      <img class="gacha-card-img" src="https://www.dfs.co.jp/wp-content/uploads/2025/08/godawari_08.jpg" alt="寿司ガチャ">
+      <div class="gacha-card-body">
+        <div class="gacha-name">寿司ガチャ</div>
+        <div class="gacha-catch">S賞は極上海鮮丼 松！通常2,398円が700円で当たるかも!?</div>
+        <div class="gacha-price">&yen;700 <span class="gacha-price-tax">税込</span></div>
+        <button class="detail-btn" onclick="openDetail(0)">詳細を見る</button>
+      </div>
+    </div>
+
+    <!-- ガチャカード2: 麺・御膳ガチャ -->
+    <div class="gacha-card">
+      <img class="gacha-card-img" src="https://www.dfs.co.jp/wp-content/uploads/2025/08/godawari_04.jpg" alt="麺・御膳ガチャ">
+      <div class="gacha-card-body">
+        <div class="gacha-name">麺・御膳ガチャ</div>
+        <div class="gacha-catch">S賞は黒毛和牛の炙り重御膳！通常2,398円の贅沢メニュー！</div>
+        <div class="gacha-price">&yen;500 <span class="gacha-price-tax">税込</span></div>
+        <button class="detail-btn" onclick="openDetail(1)">詳細を見る</button>
+      </div>
+    </div>
+
+    <div class="footer">&copy; すしめん処 大京</div>
+  </div>
+
+  <!-- ===== ガチャ詳細ページ ===== -->
+  <div class="detail-page" id="detailPage">
+    <button class="detail-back" onclick="closeDetail()">&#9664; 戻る</button>
+    <div class="detail-content">
+      <div class="detail-title" id="detailTitle"></div>
+      <div class="detail-catch" id="detailCatch"></div>
+      <div class="detail-price-header">
+        <span class="price-amount" id="detailPrice"></span>
+        <span class="price-tax">税込</span>
+      </div>
+      <table class="prize-table" id="prizeTable"></table>
+      <button class="gacha-btn" id="gachaBtn" onclick="startSpin()">ガチャを回す！</button>
+      <!-- テスト用（本番前に削除） -->
+      <button class="gacha-btn" style="background:#888;margin-top:8px;animation:none" onclick="executeSpin(currentGachaIndex)">🧪 テスト（決済スキップ）</button>
+
+      <div class="legal-links">
+        <a href="#" onclick="showLegal('tokushoho')">特定商取引法に基づく表記</a>
+        <a href="#" onclick="showLegal('terms')">利用規約</a>
+        <a href="#" onclick="showLegal('privacy')">プライバシーポリシー</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== スピンオーバーレイ（抽選中演出） ===== -->
+  <div class="overlay spin-overlay" id="spinOverlay">
+    <div class="spin-icon">&#x1F363;</div>
+    <div class="spin-text">抽選中...</div>
+  </div>
+
+  <!-- ===== 結果オーバーレイ ===== -->
+  <div class="overlay result-overlay" id="resultOverlay">
+    <div class="result-card" id="resultCard">
+      <div class="result-badge" id="resultBadge"></div>
+      <div class="result-prize-name" id="resultPrizeName"></div>
+      <div class="result-price-block">
+        <div class="result-original-price" id="resultOriginalPrice"></div>
+        <div class="result-gacha-price" id="resultGachaPrice"></div>
+      </div>
+      <img class="result-image" id="resultImage" alt="景品">
+      <div class="staff-notice">この画面を店員にお見せください</div>
+      <div class="result-clock" id="resultClock"></div>
+      <div class="result-countdown" id="resultCountdown"></div>
+      <div class="result-timestamp" id="resultTimestamp"></div>
+      <div class="result-buttons">
+        <button class="btn-retry" onclick="retryGacha()">もう一度回す</button>
+        <button class="btn-top" onclick="goTop()">トップに戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 法的ページ ===== -->
+  <div class="legal-page" id="legalPage">
+    <button class="detail-back" onclick="closeLegal()">&#9664; 戻る</button>
+    <div class="legal-content" id="legalContent"></div>
+  </div>
+
+
+<script>
+/* ===== 決済URL設定（Stripe Payment Links に差し替えてください） ===== */
+var PAYMENT_URLS = [
+  'https://buy.stripe.com/00w5kxfpv6NIg0Ignq2VG00',  // 寿司ガチャ ¥700
+  'https://buy.stripe.com/eVq7sFfpv2xs4i09Z22VG01'   // 麺・御膳ガチャ ¥500
+];
+/* ===== ↑ 導入先に合わせて変更 ===== */
+
+/* ===== ガチャデータ定義（大京の実メニューに完全準拠） ===== */
+var GACHA_DATA = [
+  {
+    name: '寿司ガチャ',
+    catchCopy: 'S賞は極上海鮮丼 松！通常2,398円が700円で当たるかも!?',
+    price: 700,
+    prizes: [
+      {
+        grade: 'S', prob: 5,
+        name: '極上海鮮丼 松',
+        menuNo: '#2024',
+        originalPrice: 2398,
+        image: 'https://www.dfs.co.jp/wp-content/uploads/2025/08/godawari_08.jpg'
+      },
+      {
+        grade: 'A', prob: 15,
+        name: '特くらべにぎり',
+        menuNo: '#2000',
+        originalPrice: 1980,
+        image: 'https://www.dfs.co.jp/wp-content/uploads/2025/08/godawari_07.jpg'
+      },
+      {
+        grade: 'B', prob: 30,
+        name: 'おもてなし にぎり',
+        menuNo: '#2200',
+        originalPrice: 1540,
+        image: 'https://www.dfs.co.jp/wp-content/uploads/2025/08/godawari_06.jpg'
+      },
+      {
+        grade: 'C', prob: 50,
+        name: '厳選にぎり',
+        menuNo: '#2002',
+        originalPrice: 1298,
+        image: 'https://www.dfs.co.jp/wp-content/uploads/2025/08/godawari_03.jpg'
+      }
+    ]
+  },
+  {
+    name: '麺・御膳ガチャ',
+    catchCopy: 'S賞は黒毛和牛の炙り重御膳！通常2,398円の贅沢メニュー！',
+    price: 500,
+    prizes: [
+      {
+        grade: 'S', prob: 5,
+        name: '黒毛和牛の炙り重御膳',
+        menuNo: '#2207',
+        originalPrice: 2398,
+        image: 'https://www.dfs.co.jp/wp-content/uploads/2024/11/top241121-1.jpg'
+      },
+      {
+        grade: 'A', prob: 15,
+        name: '鴨南蛮そば',
+        menuNo: '#2487',
+        originalPrice: 1298,
+        image: 'https://www.dfs.co.jp/wp-content/uploads/2024/11/top241121-2.jpg'
+      },
+      {
+        grade: 'B', prob: 30,
+        name: 'すしめん御膳',
+        menuNo: '#2203',
+        originalPrice: 1298,
+        image: 'https://www.dfs.co.jp/wp-content/uploads/2024/11/top241121-6.jpg'
+      },
+      {
+        grade: 'C', prob: 50,
+        name: '大京御膳',
+        menuNo: '#2202',
+        originalPrice: 1078,
+        image: 'https://www.dfs.co.jp/wp-content/uploads/2020/04/topimage01-1.jpg'
+      }
+    ]
+  }
+];
+
+/* ===== 状態管理 ===== */
+var currentGachaIndex = -1;  /* 選択中のガチャ番号 */
+var isSpinning = false;       /* 二重タップ防止フラグ */
+
+/* ===== 詳細画面を開く ===== */
+function openDetail(index) {
+  currentGachaIndex = index;
+  var gacha = GACHA_DATA[index];
+  document.getElementById('detailTitle').textContent = gacha.name;
+  document.getElementById('detailCatch').textContent = gacha.catchCopy;
+  document.getElementById('detailPrice').textContent = '\u00a5' + gacha.price.toLocaleString();
+
+  /* 景品テーブルを構築 */
+  var table = document.getElementById('prizeTable');
+  table.innerHTML = '';
+  gacha.prizes.forEach(function(p) {
+    var tr = document.createElement('tr');
+    tr.className = 'prize-row';
+    tr.innerHTML =
+      '<td><img src="' + p.image + '" alt="' + p.name + '"></td>' +
+      '<td>' +
+        '<span class="prize-grade ' + p.grade.toLowerCase() + '">' + p.grade + '\u8CDE</span>' +
+        '<div class="prize-name">' + p.name + '</div>' +
+        '<div class="prize-prob">\u78BA\u7387 ' + p.prob + '%\u3000\u901A\u5E38\u00a5' + p.originalPrice.toLocaleString() + '\u7A0E\u8FBC</div>' +
+      '</td>';
+    table.appendChild(tr);
+  });
+
+  /* ボタンの状態をリセット */
+  var btn = document.getElementById('gachaBtn');
+  btn.disabled = false;
+  btn.textContent = '\u30AC\u30C1\u30E3\u3092\u56DE\u3059\uFF01';
+
+  document.getElementById('topScreen').style.display = 'none';
+  document.getElementById('detailPage').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ===== 詳細画面を閉じる ===== */
+function closeDetail() {
+  document.getElementById('detailPage').classList.remove('active');
+  document.getElementById('topScreen').style.display = '';
+  currentGachaIndex = -1;
+  window.scrollTo(0, 0);
+}
+
+/* ===== 抽選ロジック（重み付きランダム） ===== */
+function drawPrize(gacha) {
+  var rand = Math.random() * 100;
+  var cumulative = 0;
+  for (var i = 0; i < gacha.prizes.length; i++) {
+    cumulative += gacha.prizes[i].prob;
+    if (rand < cumulative) return gacha.prizes[i];
+  }
+  /* フォールバック（浮動小数点誤差対策） */
+  return gacha.prizes[gacha.prizes.length - 1];
+}
+
+/* ===== ガチャを回す → 直接Stripe決済へ ===== */
+function startSpin() {
+  if (isSpinning) return;
+  var url = PAYMENT_URLS[currentGachaIndex];
+  if (url) {
+    window.location.href = url;
+  }
+}
+
+/* ===== 決済成功後のスピン実行 ===== */
+function executeSpin(gachaIndex) {
+  currentGachaIndex = gachaIndex;
+  isSpinning = true;
+
+  document.getElementById('detailPage').classList.remove('active');
+  document.getElementById('topScreen').style.display = 'none';
+  document.getElementById('spinOverlay').classList.add('active');
+
+  var gacha = GACHA_DATA[gachaIndex];
+  var result = drawPrize(gacha);
+
+  setTimeout(function() {
+    document.getElementById('spinOverlay').classList.remove('active');
+    showResult(result, gacha);
+  }, 2000);
+}
+
+/* ===== 結果画面を表示 ===== */
+function showResult(prize, gacha) {
+  var card = document.getElementById('resultCard');
+  var badge = document.getElementById('resultBadge');
+  var g = prize.grade.toLowerCase();
+
+  /* カードのアニメーションクラスをリセット */
+  card.className = 'result-card';
+  badge.className = 'result-badge ' + g;
+  badge.textContent = prize.grade + '\u8CDE'; /* 「S賞」のように表示 */
+
+  /* 景品情報をセット */
+  document.getElementById('resultPrizeName').textContent = prize.name;
+  document.getElementById('resultOriginalPrice').textContent = '\u901A\u5E38 \u00a5' + prize.originalPrice.toLocaleString() + ' \u7A0E\u8FBC';
+  document.getElementById('resultGachaPrice').textContent = '\u2192 \u00a5' + gacha.price.toLocaleString();
+  document.getElementById('resultImage').src = prize.image;
+
+  /* 等級に応じた演出とアニメーション */
+  requestAnimationFrame(function() {
+    switch (g) {
+      case 's':
+        card.classList.add('spin-gold');
+        /* 回転アニメ終了後にグロー付与 */
+        setTimeout(function() { card.classList.add('glow-gold'); }, 1000);
+        spawnConfetti(60, ['#d4a843', '#c41e3a', '#FFA500']);
+        spawnSparkles(30);
+        spawnRings(3);
+        shakeScreen();
+        break;
+      case 'a':
+        card.classList.add('spin-silver');
+        setTimeout(function() { card.classList.add('glow-silver'); }, 900);
+        spawnConfetti(30, ['#C0C0C0', '#4A90D9', '#fff']);
+        spawnSparkles(15);
+        break;
+      case 'b':
+        card.classList.add('spin-normal');
+        spawnConfetti(10, ['#CD7F32', '#D4A574', '#F5DEB3']);
+        break;
+      case 'c':
+        card.classList.add('spin-normal');
+        /* C賞は演出なし */
+        break;
+    }
+  });
+
+  /* 抽選時刻をフォーマットして表示 */
+  var now = new Date();
+  var timestamp = now.getFullYear() + '/' +
+    ('0' + (now.getMonth() + 1)).slice(-2) + '/' +
+    ('0' + now.getDate()).slice(-2) + ' ' +
+    ('0' + now.getHours()).slice(-2) + ':' +
+    ('0' + now.getMinutes()).slice(-2);
+  document.getElementById('resultTimestamp').textContent = timestamp + '\u306B\u62BD\u9078';
+
+  /* ワンタイムトークンをsessionStorageに保存（店員確認用） */
+  var token = Date.now().toString(36) + Math.random().toString(36).substr(2, 8);
+  sessionStorage.setItem('gacha_result_token', JSON.stringify({
+    token: token,
+    gacha: gacha.name,
+    prize: prize.name,
+    grade: prize.grade,
+    time: timestamp
+  }));
+
+  document.getElementById('resultOverlay').classList.add('active');
+
+  /* リアルタイム時計 + 5分カウントダウン開始 */
+  startResultTimer();
+
+  /* スピン完了（ボタン再有効化） */
+  setTimeout(function() { isSpinning = false; }, 1000);
+}
+
+/* ===== リアルタイム時計 + カウントダウン ===== */
+var resultTimerInterval = null;
+var resultExpireTime = null;
+var EXPIRE_MINUTES = 5;
+
+function startResultTimer() {
+  /* 前回のタイマーをクリア */
+  if (resultTimerInterval) clearInterval(resultTimerInterval);
+
+  /* 期限切れオーバーレイがあれば削除 */
+  var oldExpired = document.getElementById('expiredOverlay');
+  if (oldExpired) oldExpired.remove();
+
+  resultExpireTime = Date.now() + EXPIRE_MINUTES * 60 * 1000;
+
+  function tick() {
+    var now = new Date();
+    /* リアルタイム時計（秒まで表示） */
+    var clock = document.getElementById('resultClock');
+    if (clock) {
+      clock.textContent =
+        ('0' + now.getHours()).slice(-2) + ':' +
+        ('0' + now.getMinutes()).slice(-2) + ':' +
+        ('0' + now.getSeconds()).slice(-2);
+    }
+
+    /* カウントダウン */
+    var remaining = Math.max(0, resultExpireTime - Date.now());
+    var cd = document.getElementById('resultCountdown');
+    if (cd) {
+      if (remaining <= 0) {
+        cd.textContent = '有効期限切れ';
+        cd.classList.add('warning');
+        clearInterval(resultTimerInterval);
+        showExpired();
+      } else {
+        var min = Math.floor(remaining / 60000);
+        var sec = Math.floor((remaining % 60000) / 1000);
+        cd.textContent = '有効期限 あと ' + min + ':' + ('0' + sec).slice(-2);
+        /* 残り1分で警告色 */
+        if (remaining < 60000) {
+          cd.classList.add('warning');
+        } else {
+          cd.classList.remove('warning');
+        }
+      }
+    }
+  }
+
+  tick();
+  resultTimerInterval = setInterval(tick, 1000);
+}
+
+function showExpired() {
+  var card = document.getElementById('resultCard');
+  var overlay = document.createElement('div');
+  overlay.className = 'expired-overlay';
+  overlay.id = 'expiredOverlay';
+  overlay.innerHTML =
+    '<div class="expired-text">有効期限切れ</div>' +
+    '<div class="expired-sub">もう一度ガチャを回してください</div>';
+  card.appendChild(overlay);
+}
+
+/* ===== 紙吹雪を生成 ===== */
+function spawnConfetti(count, colors) {
+  for (var i = 0; i < count; i++) {
+    var el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.width = (6 + Math.random() * 8) + 'px';
+    el.style.height = (6 + Math.random() * 8) + 'px';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    var duration = 2 + Math.random() * 2;
+    var delay = Math.random() * 0.8;
+    el.style.animation = 'confetti ' + duration + 's ease-in ' + delay + 's forwards';
+    document.body.appendChild(el);
+    /* クロージャでタイマー変数をキャプチャ */
+    (function(elem, d, dl) {
+      setTimeout(function() { if (elem.parentNode) elem.remove(); }, (d + dl) * 1000 + 100);
+    })(el, duration, delay);
+  }
+}
+
+/* ===== スパークルを生成 ===== */
+function spawnSparkles(count) {
+  for (var i = 0; i < count; i++) {
+    var el = document.createElement('div');
+    el.className = 'sparkle';
+    el.textContent = '\u2728'; /* ✨ */
+    el.style.left = (10 + Math.random() * 80) + 'vw';
+    el.style.top = (10 + Math.random() * 80) + 'vh';
+    el.style.fontSize = (16 + Math.random() * 20) + 'px';
+    var duration = 0.8 + Math.random() * 1.2;
+    var delay = Math.random() * 1.5;
+    el.style.animation = 'floatSparkle ' + duration + 's ease-in-out ' + delay + 's forwards';
+    document.body.appendChild(el);
+    (function(elem, d, dl) {
+      setTimeout(function() { if (elem.parentNode) elem.remove(); }, (d + dl) * 1000 + 100);
+    })(el, duration, delay);
+  }
+}
+
+/* ===== リングを生成 ===== */
+function spawnRings(count) {
+  for (var i = 0; i < count; i++) {
+    var el = document.createElement('div');
+    el.className = 'ring';
+    el.style.left = '50%';
+    el.style.top = '50%';
+    el.style.marginLeft = '-20px';
+    el.style.marginTop = '-20px';
+    var delay = i * 0.3;
+    el.style.animation = 'ringExpand 1s ease-out ' + delay + 's forwards';
+    document.body.appendChild(el);
+    (function(elem, dl) {
+      setTimeout(function() { if (elem.parentNode) elem.remove(); }, (1 + dl) * 1000 + 100);
+    })(el, delay);
+  }
+}
+
+/* ===== 画面シェイク（S賞演出） ===== */
+function shakeScreen() {
+  document.body.style.animation = 'shakeRing 0.6s ease-in-out';
+  setTimeout(function() { document.body.style.animation = ''; }, 600);
+}
+
+/* ===== もう一度回す → 決済画面（詳細画面）に戻す ===== */
+function retryGacha() {
+  if (resultTimerInterval) clearInterval(resultTimerInterval);
+  document.getElementById('resultOverlay').classList.remove('active');
+  document.getElementById('topScreen').style.display = '';
+  clearEffects();
+  setTimeout(function() { openDetail(currentGachaIndex); }, 200);
+}
+
+/* ===== トップに戻る ===== */
+function goTop() {
+  if (resultTimerInterval) clearInterval(resultTimerInterval);
+  document.getElementById('resultOverlay').classList.remove('active');
+  document.getElementById('topScreen').style.display = '';
+  clearEffects();
+  currentGachaIndex = -1;
+}
+
+/* ===== エフェクト要素をクリーンアップ ===== */
+function clearEffects() {
+  var effects = document.querySelectorAll('.confetti-piece, .sparkle, .ring');
+  for (var i = 0; i < effects.length; i++) {
+    effects[i].remove();
+  }
+}
+
+/* ===== 法的ページ ===== */
+var LEGAL_PAGES = {
+  tokushoho: '<h2>特定商取引法に基づく表記</h2>' +
+    '<table>' +
+    '<tr><td>販売事業者</td><td>すしめん処 大京</td></tr>' +
+    '<tr><td>所在地</td><td>（店舗住所をここに記載）</td></tr>' +
+    '<tr><td>電話番号</td><td>（電話番号をここに記載）</td></tr>' +
+    '<tr><td>メールアドレス</td><td>（メールアドレスをここに記載）</td></tr>' +
+    '<tr><td>運営責任者</td><td>（責任者名をここに記載）</td></tr>' +
+    '<tr><td>商品の販売価格</td><td>寿司ガチャ: ¥700（税込）<br>麺・御膳ガチャ: ¥500（税込）</td></tr>' +
+    '<tr><td>商品代金以外の費用</td><td>なし</td></tr>' +
+    '<tr><td>支払方法</td><td>クレジットカード決済</td></tr>' +
+    '<tr><td>支払時期</td><td>ご注文時に即時決済</td></tr>' +
+    '<tr><td>商品の引き渡し時期</td><td>決済完了後、店内にて即時提供</td></tr>' +
+    '<tr><td>返品・交換</td><td>ガチャの性質上、決済後の返品・交換はお受けできません。商品（お料理）に不備がある場合は店員にお申し出ください。</td></tr>' +
+    '</table>',
+
+  terms: '<h2>利用規約</h2>' +
+    '<h3>第1条（適用）</h3>' +
+    '<p>本規約は、すしめん処 大京（以下「当店」）が提供するガチャサービス（以下「本サービス」）の利用に関する条件を定めるものです。</p>' +
+    '<h3>第2条（サービス内容）</h3>' +
+    '<p>本サービスは、当店メニューをランダムに抽選して提供するエンターテイメントサービスです。抽選結果に基づいた料理を店内でお召し上がりいただけます。</p>' +
+    '<h3>第3条（利用条件）</h3>' +
+    '<p>本サービスは店内でのご飲食時にのみご利用いただけます。テイクアウトには対応しておりません。</p>' +
+    '<h3>第4条（決済）</h3>' +
+    '<p>ガチャの結果確認後、オンライン決済にてお支払いいただきます。決済完了後のキャンセルはお受けできません。</p>' +
+    '<h3>第5条（禁止事項）</h3>' +
+    '<p>不正な手段による抽選操作、転売目的でのご利用、その他当店が不適切と判断する行為を禁止します。</p>' +
+    '<h3>第6条（免責事項）</h3>' +
+    '<p>通信障害等によりサービスが利用できない場合、当店は一切の責任を負いません。</p>' +
+    '<h3>第7条（規約の変更）</h3>' +
+    '<p>当店は本規約を予告なく変更できるものとします。</p>',
+
+  privacy: '<h2>プライバシーポリシー</h2>' +
+    '<h3>1. 収集する情報</h3>' +
+    '<p>本サービスでは、決済に必要な情報（クレジットカード情報等）を決済サービス提供会社（Stripe）を通じて処理します。当店がカード情報を直接保持することはありません。</p>' +
+    '<h3>2. 利用目的</h3>' +
+    '<p>収集した情報は、ガチャサービスの提供および決済処理のためにのみ利用します。</p>' +
+    '<h3>3. 第三者への提供</h3>' +
+    '<p>法令に基づく場合を除き、お客様の個人情報を第三者に提供することはありません。</p>' +
+    '<h3>4. Cookieの使用</h3>' +
+    '<p>本サービスではセッション管理のためにブラウザのローカルストレージを使用する場合があります。</p>' +
+    '<h3>5. お問い合わせ</h3>' +
+    '<p>個人情報に関するお問い合わせは店舗までお願いいたします。</p>'
+};
+
+function showLegal(type) {
+  document.getElementById('legalContent').innerHTML = LEGAL_PAGES[type] || '';
+  document.getElementById('detailPage').classList.remove('active');
+  document.getElementById('legalPage').classList.add('active');
+  window.scrollTo(0, 0);
+  return false;
+}
+
+function closeLegal() {
+  document.getElementById('legalPage').classList.remove('active');
+  document.getElementById('detailPage').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ===== 決済成功 → 自動スピン ===== */
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var paid = params.get('paid');
+  var gachaIndex = parseInt(params.get('gacha'), 10);
+
+  if (paid === '1' && (gachaIndex === 0 || gachaIndex === 1)) {
+    history.replaceState(null, '', window.location.pathname);
+    setTimeout(function() {
+      executeSpin(gachaIndex);
+    }, 500);
+  }
+})();
+</script>
+</body>
+</html>
